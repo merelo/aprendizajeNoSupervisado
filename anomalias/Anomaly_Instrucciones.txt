@@ -1,0 +1,24 @@
+Todos los ficheros mencionados a partir de ahora se encuentran dentro del siguiente zip:
+	Anomaly_R.zip
+
+1. En primer lugar debe instalar en su ordenador los paquetes indicados en el fichero
+	!Outliers_A1_Paquetes_a_instalar_una_sola_vez.R
+
+2. Cada vez que inicie una sesión en R, deberá cargar las librerías indicadas en el fichero
+	!Outliers_A2_Librerias_a_cargar_en_cada_sesion.R
+   así como las funciones incluidas en el fichero
+	!Outliers_A3_Funciones_a_cargar_en_cada_sesion
+
+3. Debe resolver los problemas planteados en los siguientes ficheros:
+	!GuionPracticas_Outliers_B1_1Variate_IQR.R ->  Contiene el guión propuesto para la detección heurística de Outliers en 1 variable según el método IQR
+	!GuionPracticas_Outliers_B2_1Variate_TestsEstadisticos -> Contiene el guión propuesto para la detección de Outliers en 1 variable normal aplicando el test de Grubb y de Rosner
+	!GuionPracticas_Outliers_C1_MultiVariate_Mahalanobis.R -> Contiene el guión propuesto para la detección de Outliers multivariantes en distribuciones conjuntas normales aplicando tests basados en la distancia de Mahalanobis
+	!GuionPracticas_Outliers_D1_LOF -> Contiene el guión propuesto para la detección de Outliers multivariantes según el método LOF
+	!GuionPracticas_Outliers_D2_ClusterBasedOutliers-> Contiene el guión propuesto para la detección de Outliers multivariantes según los métodos basados en clustering
+
+   Cuando encuentre en un fichero un apartado de "Ampliación", no lo haga y pase directamente al siguiente fichero.
+   Si ha terminado todos los ficheros durante la sesión de prácticas, vuelva y termine de resolver los apartados de Ampliación. 
+
+4. Si elige hacer el trabajo práctico de la asignatura sobre la parte de Anomalías, deberá ejecutar los scripts anteriores
+   sobre un dataset distinto a los usados en cualquier parte de la asignatura. Deberá analizar e interpretar los resultados obtenidos.
+   Debe incluir los apartados de Ampliación. 
