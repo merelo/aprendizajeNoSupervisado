@@ -70,3 +70,26 @@ redundant <-colSums(subsetMatrix, na.rm=TRUE) >= 1
 rulesPruned<-rulesSorted[!redundant] # remove redundant rules
 inspect(head(rulesPruned))
 
+#calculo de medidas de interes
+mInteres<-interestMeasure(rulesPruned, measure=c("hyperConfidence", "leverage" ,"phi", "gini"), transactions=Adult)
+quality(rulesPruned) <-cbind(quality(rulesPruned), mInteres)
+inspect(head(sort(rulesPruned, by="phi")))
+
+library (arulesViz)
+plot(rulesPruned)
+
+plot(rulesPruned[1:6], method="graph")
+plot(rulesPruned[1:6], method="graph", engine="interactive")
+
+plot(rulesPruned, method="grouped")
+
+plot(rulesPruned[1:6], method="paracoord", reorder=TRUE)
+
+#guardar y leer reglas
+#guardar
+write(rulesPruned, file="reglas.csv", sep = ",")
+library(pmml)
+#guardar en formato pmml
+write.PMML(rulesPruned, file="reglas.pmml")
+
+reglasPMML= read.PMML("reglas.pmml")
