@@ -1,5 +1,6 @@
 library(mlbench)
 library(arules)
+library(dummy)
 
 data(Zoo)
 
@@ -53,48 +54,79 @@ inspect(head(rulesSorted))
 mejores<-rulesSorted[rulesSorted@quality$lift>2]
 mejores<-limpiar(mejores)
 mejores<-mejores[order(mejores@quality$support*mejores@quality$confidence)]
-View(inspect(head(mejores,n=50)))
+inspect(head(mejores,n=25))
+
+
+#{eggs=TRUE,fins=FALSE} => {toothed=FALSE}
+rulesPruned<- subset(rules, subset = lhs %in% "eggs=TRUE" & lhs %in% "fins=FALSE")
+rulesPruned<-limpiar(rulesPruned)
+inspect(rulesPruned)
 #{milk=FALSE,fins=FALSE} => {toothed=FALSE}
 rulesPruned<- subset(rules, subset = lhs %in% "milk=FALSE" & lhs %in% "fins=FALSE")
 rulesPruned<-limpiar(rulesPruned)
-inspect(rulesPruned)
-View(zooNuevo[zooNuevo$milk==FALSE&zooNuevo$fins==FALSE&zooNuevo$toothed==FALSE,])
-View(zooNuevo[zooNuevo$milk==FALSE&zooNuevo$fins==FALSE&zooNuevo$toothed==TRUE,])
-View(zooNuevo[zooNuevo$milk==FALSE&zooNuevo$fins==FALSE&zooNuevo$type=="reptile",c("milk","fins","toothed","type")])
-View(zooNuevo[zooNuevo$milk==FALSE&zooNuevo$fins==FALSE&zooNuevo$type=="amphibian",c("milk","fins","toothed","type")])
-
-
-
-
-
-
-
-
-
-
-
-
-
+inspect(rulesPruned) #{milk=FALSE,fins=FALSE} => {eggs=TRUE}
+#{type=mammal} => {milk=TRUE} confianza=1
 rulesPruned<- subset(rules, subset = lhs %in% "type=mammal")
+rulesPruned<-limpiar(rulesPruned)
+inspect(rulesPruned)
+#{milk=TRUE} => {type=mammal} confianza=1
 rulesPruned<- subset(rules, subset = lhs %in% "milk=TRUE")
 rulesPruned<-limpiar(rulesPruned)
 inspect(rulesPruned)
-#type=mammal, milk=TRUE tienen las mismas reglas
+# View(zooNuevo[zooNuevo$milk==FALSE&zooNuevo$fins==FALSE&zooNuevo$toothed==FALSE,])
+# View(zooNuevo[zooNuevo$milk==FALSE&zooNuevo$fins==FALSE&zooNuevo$toothed==TRUE,])
+# View(zooNuevo[zooNuevo$milk==FALSE&zooNuevo$fins==FALSE&zooNuevo$type=="reptile",c("milk","fins","toothed","type")])
+# View(zooNuevo[zooNuevo$milk==FALSE&zooNuevo$fins==FALSE&zooNuevo$type=="amphibian",c("milk","fins","toothed","type")])
+
+
+
+
+
+##################
+# REGLAS NEGADAS #
+##################
+zooNegados<-cbind(zooNuevo[1:16],dummy(zooNuevo)[33:39])
+levels(zooNegados$type_amphibian)<-c(FALSE,TRUE)
+levels(zooNegados$type_bird)<-c(FALSE,TRUE)
+levels(zooNegados$type_fish)<-c(FALSE,TRUE)
+levels(zooNegados$type_insect)<-c(FALSE,TRUE)
+levels(zooNegados$type_mammal)<-c(FALSE,TRUE)
+levels(zooNegados$type_mollusc.et.al)<-c(FALSE,TRUE)
+levels(zooNegados$type_reptile)<-c(FALSE,TRUE)
+
+#como hemos visto previamente, milk=TRUE y mammal=TRUE se cumplen siempre, eliminamos una de las
+#dos columnas para evitarnos informacion duplicada
+zooNegados<-zooNegados[-4]
+
+rulesNegadas <- apriori(zooNegados, parameter = list(support = 0.4, confidence = 0.8, minlen = 2))
+#mejor lift y mejor support*confidence
+rulesSorted = sort(rulesNegadas, by = "lift")
+inspect(head(rulesSorted))
+mejoresNegadas<-rulesSorted[rulesSorted@quality$lift>2]
+mejoresNegadas<-limpiar(mejoresNegadas)
+mejoresNegadas<-mejoresNegadas[order(mejoresNegadas@quality$support*mejoresNegadas@quality$confidence)]
+inspect(head(mejoresNegadas,n=10))
+
+#{feathers=FALSE,backbone=TRUE,type_fish=FALSE} => {type_mammal=TRUE}
+#{type_bird=FALSE,backbone=TRUE,type_fish=FALSE} => {type_mammal=TRUE}
+rulesPruned<- subset(mejoresNegadas, subset = lhs %in% "backbone=TRUE")
+rulesPruned<-limpiar(rulesPruned)
+inspect(rulesPruned)
+
+rulesPruned<- subset(rulesNegadas, subset = lhs %in% "type_bird=TRUE")
+rulesPruned<-limpiar(rulesPruned)
+inspect(head(rulesPruned,n=10))
+rulesPruned<- subset(mejoresNegadas, subset = lhs %in% "feathers=TRUE")
+rulesPruned<-limpiar(rulesPruned)
+inspect(rulesPruned)
+
+
+
+
+
 
 
 rulesPruned<- subset(rules, subset = lhs %in% "legs=has_legs")
 rulesPruned<-limpiar(rulesPruned)
 inspect(rulesPruned)
 #explicar por que no es viable, porcentaje de casos
-
-mInteres <- interestMeasure(rulesPruned, measure=c("hyperConfidence", "leverage"
-                                                   ,"phi", "gini"), transactions=zooNuevo)
-quality(rulesPruned) <- cbind(quality(rulesPruned), mInteres)
-inspect(head(sort(rulesPruned, by="phi")))
-
-#install.packages("arulesViz")
-library (arulesViz)
-
-plot(rulesPruned)
-plot(rulesPruned[1:5], method="graph")
-plot(rulesPruned[1:5], method="graph", engine="interactive")
