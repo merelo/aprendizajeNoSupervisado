@@ -1,0 +1,22 @@
+---
+title: "Anomalias_D2"
+author: "Miguel Merelo Hernández"
+date: "February 11, 2018"
+output: html_document
+---
+
+```{r functions, include=FALSE}
+source("../anomalias/!Outliers_A3_Funciones_a_cargar_en_cada_sesion2.R")
+source("../anomalias/!Outliers_A2_Librerias_a_cargar_en_cada_sesion.R")
+```
+
+## Crear datos
+Utilizamos LetterRecognition del paquete mlbench. Solo utilizamos las primeras 200 líneas ya que la visualización de 20000 entradas hace imposible analizar el problema.
+
+```{r, message=F, warning=F}
+library(mlbench)
+data("LetterRecognition")
+mis.datos.numericos<-LetterRecognition[1:200,-c(1)]
+mis.datos.numericos.normalizados<-scale(mis.datos.numericos)
+row.names(mis.datos.numericos.normalizados)<-row.names(mis.datos.numericos)
+```

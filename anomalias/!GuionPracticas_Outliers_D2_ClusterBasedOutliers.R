@@ -129,6 +129,9 @@ top.outliers.iris<-order(dist.centroides.iris,decreasing=TRUE)[1:numero.de.outli
 
 
 # COMPLETAR
+
+
+
 # top_clustering_outliers = function(datos.normalizados, 
 #                                   indices.asignacion.clustering, 
 #                                   datos.centroides.normalizados, 

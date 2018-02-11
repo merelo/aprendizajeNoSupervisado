@@ -1,6 +1,3 @@
-# M?ster -> Detecci?n de anomal?as
-# Juan Carlos Cubero. Universidad de Granada
-
 ###########################################################################
 # MULTIVARIATE STATISTICAL OUTLIERS -> LOF 
 ###########################################################################
@@ -25,7 +22,9 @@
 
 
 # COMPLETAR
-mis.datos.numericos<-iris[1:4]
+library(mlbench)
+data("LetterRecognition")
+mis.datos.numericos<-LetterRecognition[1:200,-c(1)]
 mis.datos.numericos.normalizados<-scale(mis.datos.numericos)
 row.names(mis.datos.numericos.normalizados)<-row.names(mis.datos.numericos)
 
@@ -44,7 +43,7 @@ row.names(mis.datos.numericos.normalizados)<-row.names(mis.datos.numericos)
 alpha.value = 0.05
 alpha.value.penalizado = 1 - ( 1 - alpha.value) ^ (1 / nrow(mis.datos.numericos))
 set.seed(12) 
-mvoutlier.plot<-uni.plot(mis.datos.numericos,symb=FALSE,alpha=alpha.value.penalizado)
+mvoutlier.plot<-uni.plot(mis.datos.numericos[1:10],symb=FALSE,alpha=alpha.value.penalizado)
 is.MCD.outlier<-mvoutlier.plot$outliers
 numero.de.outliers.MCD<-sum(is.MCD.outlier)
 
@@ -125,9 +124,9 @@ lof.scores<-lofactor(mis.datos.numericos.normalizados,numero.de.vecinos.lof)
 plot(lof.scores)
 numero.de.outliers = 4
 indices.de.lof.outliers.ordenados<-order(lof.scores,decreasing=TRUE)
-indices.de.lof.top.outliers<-indices.de.lof.outliers.ordenados[1:4]
+indices.de.lof.top.outliers<-indices.de.lof.outliers.ordenados[1:4] #[1]  321  748  971 1167
 is.lof.outlier<-row.names(mis.datos.numericos) %in% indices.de.lof.top.outliers
-MiBiPlot_Multivariate_Outliers(mis.datos.numericos,is.lof.outlier,"IRIS")
+MiBiPlot_Multivariate_Outliers(mis.datos.numericos,is.lof.outlier,"LETTERRECOGNITION")
 
 
 
@@ -159,7 +158,7 @@ MiBiPlot_Multivariate_Outliers(mis.datos.numericos,is.lof.outlier,"IRIS")
 # COMPLETAR
 vector.claves.outliers.IQR.en.alguna.columna<-vector_claves_outliers_IQR_en_alguna_columna(mis.datos.numericos)
 vector.es.outlier.IQR.en.alguna.columna<-vector_es_outlier_IQR_en_alguna_columna(mis.datos.numericos)
-MiBiPlot_Multivariate_Outliers(mis.datos.numericos,vector.es.outlier.IQR.en.alguna.columna,"IRIS")
+MiBiPlot_Multivariate_Outliers(mis.datos.numericos,vector.es.outlier.IQR.en.alguna.columna,"LETTERRECOGNITION")
 indices.de.outliers.multivariantes.LOF.pero.no.1variantes<-setdiff(vector.claves.outliers.IQR.en.alguna.columna,indices.de.lof.top.outliers)
 
 # AMPLIACI?N: Utilice la funci?n is.numeric y sapply para construir autom?ticamente un data frame

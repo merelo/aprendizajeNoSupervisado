@@ -12,10 +12,10 @@ summary(zooNuevo)
 zooTrans<-as(zooNuevo,"transactions")
 summary(zooTrans)
 
-image(zooTrans)
+image(zooTrans) #no muy representativo
 itemFrequencyPlot(zooTrans,support=0.5,cex.names=0.8)
 
-apriZoo<-apriori(zooTrans,parameter = list(support = 0.4, target="frequent"))
+apriZoo<-apriori(zooTrans,parameter = list(support = 0.2, target="frequent"))
 apriZoo<-sort(apriZoo,by="support")
 inspect(head(apriZoo,n=10))
 
@@ -33,8 +33,10 @@ inspect(head(sort(cerrZoo,by="support")))
 barplot( c(frequent=length(apriZoo), closed=length(cerrZoo),maximal=length(maxZoo)), ylab="count", xlab="itemsets")
 
 
+
+
 #reglas
-rules <- apriori(zooNuevo, parameter = list(support = 0.37, confidence = 0.8, minlen = 2))
+rules <- apriori(zooNuevo, parameter = list(support = 0.2, confidence = 0.8, minlen = 2))
 
 inspect(head(rules))
 summary(rules)
@@ -57,14 +59,27 @@ mejores<-mejores[order(mejores@quality$support*mejores@quality$confidence)]
 inspect(head(mejores,n=25))
 
 
-#{eggs=TRUE,fins=FALSE} => {toothed=FALSE}
+#{eggs=TRUE,fins=FALSE} => {toothed=FALSE} sop: 0.3861386  conf: 0.8478261
 rulesPruned<- subset(rules, subset = lhs %in% "eggs=TRUE" & lhs %in% "fins=FALSE")
 rulesPruned<-limpiar(rulesPruned)
 inspect(rulesPruned)
-#{milk=FALSE,fins=FALSE} => {toothed=FALSE}
-rulesPruned<- subset(rules, subset = lhs %in% "milk=FALSE" & lhs %in% "fins=FALSE")
+#{eggs=TRUE,aquatic=FALSE}  => {toothed=FALSE} sop: 0.2574257 conf: 0.8965517
+rulesPruned<- subset(rules, subset = lhs %in% "eggs=TRUE" & rhs %in% "toothed=FALSE")
 rulesPruned<-limpiar(rulesPruned)
-inspect(rulesPruned) #{milk=FALSE,fins=FALSE} => {eggs=TRUE}
+inspect(rulesPruned)
+
+
+#{toothed=FALSE} => {eggs=TRUE}
+rulesPruned<- subset(rules, subset = lhs %in% "toothed=FALSE" & rhs %in% "eggs=TRUE")
+rulesPruned<-limpiar(rulesPruned)
+inspect(rulesPruned)
+
+#{hair=FALSE}    => {eggs=TRUE}
+rulesPruned<- subset(rules, subset = lhs %in% "hair=FALSE" & rhs %in% "eggs=TRUE")
+rulesPruned<-limpiar(rulesPruned)
+inspect(rulesPruned)
+
+
 #{type=mammal} => {milk=TRUE} confianza=1
 rulesPruned<- subset(rules, subset = lhs %in% "type=mammal")
 rulesPruned<-limpiar(rulesPruned)
@@ -73,11 +88,6 @@ inspect(rulesPruned)
 rulesPruned<- subset(rules, subset = lhs %in% "milk=TRUE")
 rulesPruned<-limpiar(rulesPruned)
 inspect(rulesPruned)
-# View(zooNuevo[zooNuevo$milk==FALSE&zooNuevo$fins==FALSE&zooNuevo$toothed==FALSE,])
-# View(zooNuevo[zooNuevo$milk==FALSE&zooNuevo$fins==FALSE&zooNuevo$toothed==TRUE,])
-# View(zooNuevo[zooNuevo$milk==FALSE&zooNuevo$fins==FALSE&zooNuevo$type=="reptile",c("milk","fins","toothed","type")])
-# View(zooNuevo[zooNuevo$milk==FALSE&zooNuevo$fins==FALSE&zooNuevo$type=="amphibian",c("milk","fins","toothed","type")])
-
 
 
 
@@ -98,7 +108,8 @@ levels(zooNegados$type_reptile)<-c(FALSE,TRUE)
 #dos columnas para evitarnos informacion duplicada
 zooNegados<-zooNegados[-4]
 
-rulesNegadas <- apriori(zooNegados, parameter = list(support = 0.4, confidence = 0.8, minlen = 2))
+
+rulesNegadas <- apriori(as(zooNegados,"transactions"), parameter = list(support = 0.4, confidence = 0.8, minlen = 2))
 #mejor lift y mejor support*confidence
 rulesSorted = sort(rulesNegadas, by = "lift")
 inspect(head(rulesSorted))
@@ -107,26 +118,14 @@ mejoresNegadas<-limpiar(mejoresNegadas)
 mejoresNegadas<-mejoresNegadas[order(mejoresNegadas@quality$support*mejoresNegadas@quality$confidence)]
 inspect(head(mejoresNegadas,n=10))
 
-#{feathers=FALSE,backbone=TRUE,type_fish=FALSE} => {type_mammal=TRUE}
-#{type_bird=FALSE,backbone=TRUE,type_fish=FALSE} => {type_mammal=TRUE}
-rulesPruned<- subset(mejoresNegadas, subset = lhs %in% "backbone=TRUE")
+
+#{feathers=FALSE, backbone=TRUE, type_amphibian=FALSE, type_fish=FALSE} => {eggs=FALSE} soporte: 0.4059 confianza: 0.89
+rulesPruned<- subset(mejoresNegadas, subset = lhs %in% "backbone=TRUE" & lhs %in% "feathers=FALSE")
 rulesPruned<-limpiar(rulesPruned)
 inspect(rulesPruned)
 
-rulesPruned<- subset(rulesNegadas, subset = lhs %in% "type_bird=TRUE")
-rulesPruned<-limpiar(rulesPruned)
-inspect(head(rulesPruned,n=10))
-rulesPruned<- subset(mejoresNegadas, subset = lhs %in% "feathers=TRUE")
+#{toothed=TRUE,type_fish=FALSE} => {eggs=FALSE} sop: 0.4059406 conf: 0.8541667
+rulesPruned<- subset(mejoresNegadas, subset = lhs %in% "toothed=TRUE" & rhs %in% "eggs=FALSE")
 rulesPruned<-limpiar(rulesPruned)
 inspect(rulesPruned)
 
-
-
-
-
-
-
-rulesPruned<- subset(rules, subset = lhs %in% "legs=has_legs")
-rulesPruned<-limpiar(rulesPruned)
-inspect(rulesPruned)
-#explicar por que no es viable, porcentaje de casos

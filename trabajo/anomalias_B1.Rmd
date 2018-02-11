@@ -1,0 +1,108 @@
+---
+title: "Anomalias_B1"
+author: "Miguel Merelo Hernández"
+date: "February 11, 2018"
+output: pdf_document
+---
+```{r functions, include=FALSE}
+source("../anomalias/!Outliers_A3_Funciones_a_cargar_en_cada_sesion2.R")
+source("../anomalias/!Outliers_A2_Librerias_a_cargar_en_cada_sesion.R")
+```
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Crear datos
+Utilizamos LetterRecognition del paquete mlbench. Solo utilizamos las primeras 200 líneas ya que la visualización de 20000 entradas hace imposible analizar el problema.
+
+```{r, message=F, warning=F}
+library(mlbench)
+data("LetterRecognition")
+mydata.numeric  = LetterRecognition[1:200,-c(1)] 
+indice.columna  = 1
+nombre.mydata   = "LetterRecognition"
+mydata.numeric.scaled<-scale(mydata.numeric,center=TRUE,scale=TRUE)
+columna<-mydata.numeric[,indice.columna]
+nombre.columna<-names(mydata.numeric[indice.columna])
+columna.scaled<-scale(columna)
+```
+
+# 1. Cómputo de los outliers IQR
+
+## Calcular los outliers según la regla IQR. Directamente sin funciones propias.
+```{r pressure}
+cuartil.primero<-quantile(columna,0.25)
+cuartil.tercero<-quantile(columna,0.75)
+iqr<-IQR(columna)
+quantile(columna.scaled)
+
+extremo.superior.outlier.normal  <- cuartil.tercero+1.5*iqr
+extremo.inferior.outlier.normal  <- cuartil.primero-1.5*iqr
+extremo.superior.outlier.extremo <- cuartil.tercero+3*iqr
+extremo.inferior.outlier.extremo <- cuartil.primero-3*iqr
+
+vector.es.outlier.normal <- columna>extremo.superior.outlier.normal | 
+  columna<extremo.inferior.outlier.normal
+vector.es.outlier.extremo <- columna>extremo.superior.outlier.extremo | 
+  columna<extremo.inferior.outlier.extremo
+```
+
+## Índices y valores de los outliers
+```{r}
+claves.outliers.normales<-which(vector.es.outlier.normal)
+data.frame.outliers.normales<-mydata.numeric[claves.outliers.normales,]
+nombres.outliers.normales<-row.names(data.frame.outliers.normales)
+valores.outliers.normales<-columna[claves.outliers.normales]
+
+```
+
+## Desviación de los outliers con respecto a la media de la columna.
+```{r}
+valores.normalizados.outliers.normales<-columna.scaled[vector.es.outlier.normal]
+```
+
+## Plot
+```{r}
+MiPlot_Univariate_Outliers(columna,claves.outliers.normales,nombre.columna)
+```
+
+## BoxPlot
+```{r}
+boxplot(columna, xlab=nombre.columna, main=nombre.mydata, las = 1)
+MiBoxPlot_IQR_Univariate_Outliers(columna.scaled, indice.columna, coef = 1.5)
+```
+
+## Cómputo de los outliers IQR con funciones propias.
+```{r}
+head(vector_es_outlier_IQR(columna.scaled,indice.columna),n=10)
+head(vector_claves_outliers_IQR(columna.scaled,indice.columna),n=10)
+indices.de.outliers.en.alguna.columna<-
+  vector_claves_outliers_IQR_en_alguna_columna(mydata.numeric)
+head(mydata.numeric.scaled[indices.de.outliers.en.alguna.columna,],n=10)
+```
+
+# Ampliación
+## Índices y valores de los outliers
+```{r}
+frame.es.outlier<-as.matrix(sapply(1:ncol(mydata.numeric),
+                                   function(x,y){vector_es_outlier_IQR(y,x)},
+                                   mydata.numeric))
+head(frame.es.outlier)
+numero.total.outliers.por.columna<-apply(frame.es.outlier,2,sum)
+numero.total.outliers.por.columna
+indices.de.outliers.en.alguna.columna<-unlist(sapply(1:ncol(mydata.numeric),
+                                                     function(x,y){vector_claves_outliers_IQR(y,x)},
+                                                     frame.es.outlier))
+head(indices.de.outliers.en.alguna.columna)
+```
+
+## Desviación de los outliers con respecto a la media de la columna
+```{r}
+head(mydata.numeric.scaled[indices.de.outliers.en.alguna.columna,])
+```
+
+## Boxplot
+```{r}
+MiBoxPlot_juntos_con_etiquetas(mydata.numeric)
+```

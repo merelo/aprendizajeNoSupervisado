@@ -1,0 +1,71 @@
+---
+title: "Anomalias_C1"
+author: "Miguel Merelo Hernández"
+date: "February 11, 2018"
+output: pdf_document
+---
+
+```{r functions, include=FALSE}
+source("../anomalias/!Outliers_A3_Funciones_a_cargar_en_cada_sesion2.R")
+source("../anomalias/!Outliers_A2_Librerias_a_cargar_en_cada_sesion.R")
+```
+
+## Crear datos
+Utilizamos LetterRecognition del paquete mlbench. Solo utilizamos las primeras 200 líneas ya que la visualización de 20000 entradas hace imposible analizar el problema.
+
+```{r, message=F, warning=F}
+library(mlbench)
+data("LetterRecognition")
+mydata.numeric = LetterRecognition[1:200,-c(1)]
+mydata.numeric.scaled = scale(mydata.numeric)
+```
+
+# 1. Obtención de los outliers multivariantes
+```{r}
+alpha.value = 0.05
+alpha.value.penalizado = 1 - ( 1 - alpha.value) ^ (1 / nrow(mydata.numeric))
+set.seed(12)  
+#solo con las 10 primeras variables, uni.plot no permite mas
+mvoutlier.plot<-uni.plot(mydata.numeric[1:10],symb=FALSE,alpha=alpha.value.penalizado)
+```
+
+# 2. Análisis de los outliers
+```{r}
+is.MCD.outlier<-mvoutlier.plot$outliers
+numero.de.outliers.MCD<-sum(is.MCD.outlier)
+
+indices.de.outliers.en.alguna.columna<-
+  vector_claves_outliers_IQR_en_alguna_columna(mydata.numeric)
+head(indices.de.outliers.en.alguna.columna,n=20)
+```
+
+```{r}
+indices.de.outliers.multivariantes.MCD<-which(is.MCD.outlier)
+head(indices.de.outliers.multivariantes.MCD,n=20)
+```
+
+```{r}
+indices.de.outliers.multivariantes.MCD.pero.no.1variantes<-
+  setdiff(indices.de.outliers.multivariantes.MCD,indices.de.outliers.en.alguna.columna)
+nombres.de.outliers.multivariantes.MCD.pero.no.1variantes<-
+  names(is.MCD.outlier[indices.de.outliers.multivariantes.MCD.pero.no.1variantes])
+data.frame.solo.outliers<-mydata.numeric.scaled[is.MCD.outlier,]
+```
+
+```{r}
+set.seed(12) 
+MiBoxPlot_juntos(mydata.numeric,is.MCD.outlier)
+```
+
+```{r}
+set.seed(12)
+MiBiPlot_Multivariate_Outliers(mydata.numeric,is.MCD.outlier,"LETTERRECOGNITION")
+```
+
+```{r}
+set.seed(12) 
+MiPlot_Univariate_Outliers(mydata.numeric,
+                           indices.de.outliers.en.alguna.columna,
+                           "LETTERRECOGNITION")
+```
+

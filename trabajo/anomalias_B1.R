@@ -1,26 +1,14 @@
-# M?ster -> Detecci?n de anomal?as
-# Juan Carlos Cubero. Universidad de Granada
-
-###########################################################################
-# UNIVARIATE STATISTICAL OUTLIERS -> IQR 
-###########################################################################
-
-
-# Siga las instrucciones indicadas en el fichero Anomaly_Instrucciones.txt
-
-# Cuando necesite lanzar una ventana gr?fica, ejecute X11()
-
 # Vamos a trabajar con los siguientes objetos:
 
 # mydata.numeric: frame de datos
 # indice.columna: ?ndice de una columna de datos de mydata.numeric
 # nombre.mydata:  Nombre del frame para que aparezca en los plots
 
-# En este script los estableceremos a la base de datos mtcars, columna 1 y nombre "mtcars"
-
-mydata.numeric  = mtcars[,-c(8:11)]  # mtcars[1:7]
+library(mlbench)
+data("LetterRecognition")
+mydata.numeric  = LetterRecognition[,-c(1)] 
 indice.columna  = 1
-nombre.mydata   = "mtcars"
+nombre.mydata   = "LetterRecognition"
 
 # ------------------------------------------------------------------------
 
@@ -34,7 +22,7 @@ nombre.mydata   = "mtcars"
 
 # COMPLETAR
 mydata.numeric.scaled<-scale(mydata.numeric,center=TRUE,scale=TRUE)
-columna<-mydata.numeric[,indice.columna]
+columna<-mydata.numeric[1:200,indice.columna]
 nombre.columna<-names(mydata.numeric[indice.columna])
 columna.scaled<-scale(columna)
 
@@ -49,9 +37,6 @@ columna.scaled<-scale(columna)
 ###########################################################################
 # Calcular los outliers seg?n la regla IQR. Directamente sin funciones propias
 ###########################################################################
-
-# Transparencia 75
-
 
 # ------------------------------------------------------------------------------------
 
@@ -83,12 +68,6 @@ columna.scaled<-scale(columna)
 # si cada registro es o no un outlier con respecto a la columna fijada
 # Para ello, basta comparar con el operador > o el operador < la columna con alguno de los valores extremos anteriores
 
-# El resultado debe ser el siguiente:
-# [1] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
-# [18] FALSE FALSE  TRUE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
-
-
-
 # COMPLETAR
 cuartil.primero<-quantile(columna,0.25)
 cuartil.tercero<-quantile(columna,0.75)
@@ -115,17 +94,6 @@ vector.es.outlier.extremo<-columna>extremo.superior.outlier.extremo|columna<extr
 # valores.outliers.normales    -> vector con los datos de los outliers. Se muestra s?lo el valor de la columna que se fij? al inicio del script 
 # Idem con los extremos
 
-# Aplicando la selecci?n dada por vector.es.outlier.normal:
-
-#    [1] 20
-#                    mpg cyl disp hp drat    wt qsec
-     #Toyota Corolla 33.9   4 71.1 65 4.22 1.835 19.9
-#    [1] "Toyota Corolla"
-#    [1] 33.9
-
-# Aplicando la selecci?n dada por vector.es.outlier.extremo:
-# Ninguno
-
 
 
 # COMPLETAR
@@ -141,11 +109,6 @@ valores.outliers.normales<-columna[claves.outliers.normales]
 
 # valores.normalizados.outliers.normales -> Contiene los valores normalizados de los outliers. 
 # Usad columna.scaled y (o bien vector.es.outlier.normal o bien claves.outliers.normales)
-
-# Toyota Corolla 
-# 2.291272 
-
-
 
 # COMPLETAR
 valores.normalizados.outliers.normales<-columna.scaled[vector.es.outlier.normal]
@@ -183,8 +146,6 @@ MiPlot_Univariate_Outliers(columna,claves.outliers.normales,nombre.columna)
 # Llamamos a la misma funci?n pero con los datos normalizados
 # Lo hacemos para resaltar que el Boxplot es el mismo ya que el poder de la normalizaci?n es que no afecta a la posici?n relativa de los datos 
 
-
-
 # COMPLETAR
 boxplot(columna, xlab=nombre.columna, main=nombre.mydata, las = 1)
 MiBoxPlot_IQR_Univariate_Outliers(columna.scaled, indice.columna, coef = 1.5)
@@ -217,32 +178,11 @@ vector_claves_outliers_IQR(columna.scaled,indice.columna)
 # Esta variable contiene los ?ndices de aquellos registros que tienen un valor an?malo
 # con respecto a alguna columna
 # Mostramos los datos normalizados de dichos registros.
-# Debe salir lo siguiente;
-
-#                       mpg       cyl       disp         hp       drat          wt        qsec
-# Toyota Corolla       2.2912716 -1.224858 -1.2879099 -1.1914248  1.1660039 -1.41268280  1.14790999
-# Maserati Bora       -0.8446439  1.014882  0.5670394  2.7465668 -0.1057878  0.36051645 -1.81804880
-# Cadillac Fleetwood  -1.6078826  1.014882  1.9467538  0.8504968 -1.2466598  2.07750476  0.07344945
-# Lincoln Continental -1.6078826  1.014882  1.8499318  0.9963483 -1.1157401  2.25533570 -0.01608893
-# Chrysler Imperial   -0.8944204  1.014882  1.6885616  1.2151256 -0.6855752  2.17459637 -0.23993487
-# Merc 230             0.4495434 -1.224858 -0.7255351 -0.7538702  0.6049193 -0.06873063  2.82675459
-
-# Vemos, por ejemplo, que el Toyota se dispara (por arriba) en mpg pero no tanto en el resto de columnas
-# El Maserati se dispara en hp (por arriba) y algo menos en qsec (por abajo)
 
 
 # COMPLETAR  
 indices.de.outliers.en.alguna.columna<-vector_claves_outliers_IQR_en_alguna_columna(mydata.numeric)
 mydata.numeric.scaled[indices.de.outliers.en.alguna.columna,]
-
-
-
-
-
-
-
-
-
 
 
 
@@ -275,23 +215,11 @@ mydata.numeric.scaled[indices.de.outliers.en.alguna.columna,]
 #   El segundo argumento de sapply ser? la funci?n a aplicar, es decir, vector_es_outlier_IQR 
 #   Consulte la ayuda para obtener m?s informaci?n sobre sapply
 
-# 
-#       [,1]  [,2]  [,3]  [,4]  [,5]  [,6]  [,7]
-# [1,] FALSE FALSE FALSE FALSE FALSE FALSE FALSE
-# [2,] FALSE FALSE FALSE FALSE FALSE FALSE FALSE
-# [3,] FALSE FALSE FALSE FALSE FALSE FALSE FALSE
-# [4,] FALSE FALSE FALSE FALSE FALSE FALSE FALSE
-# [5,] FALSE FALSE FALSE FALSE FALSE FALSE FALSE
-# [6,] FALSE FALSE FALSE FALSE FALSE FALSE FALSE
-# [7,] FALSE FALSE FALSE FALSE FALSE FALSE FALSE
-# [8,] FALSE FALSE FALSE FALSE FALSE FALSE FALSE
-# [9,] FALSE FALSE FALSE FALSE FALSE FALSE  TRUE  <- El registro 9 tiene un valor an?malo en la columna 7
-# .......
-
 
 
 # COMPLETAR
 frame.es.outlier<-as.matrix(sapply(1:ncol(mydata.numeric),function(x,y){vector_es_outlier_IQR(y,x)},mydata.numeric))
+
 
 
 #----------------------------------------------------------------------
@@ -304,12 +232,11 @@ frame.es.outlier<-as.matrix(sapply(1:ncol(mydata.numeric),function(x,y){vector_e
 # Para ello, usamos apply sobre la dimensi?n 2 (las columnas) y aplicamos la funci?n sum
 # Consulte la ayuda para obtener m?s informaci?n sobre apply
 
-# [1] 1 0 0 1 0 3 1
-
 
 
 # COMPLETAR
 numero.total.outliers.por.columna<-apply(frame.es.outlier,2,sum)
+
 
 
 
@@ -327,14 +254,11 @@ numero.total.outliers.por.columna<-apply(frame.es.outlier,2,sum)
 # Para "desempaquetar" el resultado, usamos la funci?n unlist
 # El resultado lo guardamos en indices.de.outliers.en.alguna.columna
 
-# [1] 20 31 15 16 17  9
-
-# El anterior resultado nos quiere decir que las filas con claves 20, 31, 15, 16, 17 y 9 tienen un outlier en alguna de sus columnas
-
-
 
 # COMPLETAR
 indices.de.outliers.en.alguna.columna<-unlist(sapply(1:ncol(mydata.numeric),function(x,y){vector_claves_outliers_IQR(y,x)},frame.es.outlier))
+
+
 
 #----------------------------------------------------------------------
 
@@ -353,17 +277,6 @@ indices.de.outliers.en.alguna.columna<-unlist(sapply(1:ncol(mydata.numeric),func
 # Mostramos los valores normalizados de los registros que tienen un valor an?malo en cualquier columna 
 # Pero mostramos los valores de todas las columnas 
 # (no s?lo la columna con respecto a la cual cada registro era un valor an?malo)
-
-#                       mpg       cyl       disp         hp       drat          wt        qsec
-# Toyota Corolla       2.2912716 -1.224858 -1.2879099 -1.1914248  1.1660039 -1.41268280  1.14790999
-# Maserati Bora       -0.8446439  1.014882  0.5670394  2.7465668 -0.1057878  0.36051645 -1.81804880
-# Cadillac Fleetwood  -1.6078826  1.014882  1.9467538  0.8504968 -1.2466598  2.07750476  0.07344945
-# Lincoln Continental -1.6078826  1.014882  1.8499318  0.9963483 -1.1157401  2.25533570 -0.01608893
-# Chrysler Imperial   -0.8944204  1.014882  1.6885616  1.2151256 -0.6855752  2.17459637 -0.23993487
-# Merc 230             0.4495434 -1.224858 -0.7255351 -0.7538702  0.6049193 -0.06873063  2.82675459
-
-# Vemos, por ejemplo, que el Toyota se dispara (por arriba) en mpg pero no tanto en el resto de columnas
-# El Maserati se dispara en hp (por arriba) y algo menos en qsec (por abajo)
 
 
 
@@ -397,5 +310,6 @@ windows()
 
 # COMPLETAR
 MiBoxPlot_juntos_con_etiquetas(mydata.numeric)
+
 
 
