@@ -78,7 +78,6 @@ set.seed(2)  # Para establecer la semilla para la primera iteraci?n de kmeans
 
 
 # COMPLETAR
-set.seed(2)
 result<-kmeans(mis.datos.numericos.normalizados,3)
 indices.clustering.iris<-result$cluster
 centroides.normalizados.iris<-result$centers
@@ -110,8 +109,9 @@ distancias_a_centroides = function (datos.normalizados,
 
 # COMPLETAR
 dist.centroides.iris<-distancias_a_centroides(mis.datos.numericos.normalizados,indices.clustering.iris,centroides.normalizados.iris)
+dist.centroides.iris
 top.outliers.iris<-order(dist.centroides.iris,decreasing=TRUE)[1:numero.de.outliers]
-
+top.outliers.iris
 
 ###########################################################################
 # Creamos la funci?n top_clustering_outliers para realizar las tareas anteriores
@@ -129,14 +129,17 @@ top.outliers.iris<-order(dist.centroides.iris,decreasing=TRUE)[1:numero.de.outli
 
 
 # COMPLETAR
-
-
-
-# top_clustering_outliers = function(datos.normalizados, 
-#                                   indices.asignacion.clustering, 
-#                                   datos.centroides.normalizados, 
-#                                   numero.de.outliers)
-
+top_clustering_outliers = function(datos.normalizados,
+                                  indices.asignacion.clustering,
+                                  datos.centroides.normalizados,
+                                  numero.de.outliers){
+  dist.centroides<-distancias_a_centroides(datos.normalizados,indices.asignacion.clustering,datos.centroides.normalizados)
+  respuesta<-list()
+  dist.centroides.sorted<-order(dist.centroides, decreasing = TRUE)
+  respuesta$indices<-head(dist.centroides.sorted,n=numero.de.outliers)
+  respuesta$distancias<-dist.centroides[respuesta$indices]
+  respuesta
+}
 
 # Llamamos a la funci?n top_clustering_outliers e imprimimos los ?ndices y las distancias a sus 
 # centroides de los outliers
@@ -144,7 +147,7 @@ top.outliers.iris<-order(dist.centroides.iris,decreasing=TRUE)[1:numero.de.outli
 
 
 # COMPLETAR
-
+top.outliers.kmeans<-top_clustering_outliers(mis.datos.numericos.normalizados,indices.clustering.iris, centroides.normalizados.iris, numero.de.outliers)
 
 
 
@@ -170,7 +173,7 @@ top.outliers.iris<-order(dist.centroides.iris,decreasing=TRUE)[1:numero.de.outli
 numero.de.datos   = nrow(mis.datos.numericos)
 is.kmeans.outlier = rep(FALSE, numero.de.datos) 
 is.kmeans.outlier[top.outliers.kmeans$indices] = TRUE
-# is.kmeans.outlier[top.outliers.kmeans.distancia.relativa] = TRUE
+is.kmeans.outlier
 
 
 BIPLOT.isOutlier             = is.kmeans.outlier
@@ -239,8 +242,11 @@ MiBiPlot_Clustering_Outliers(mis.datos.numericos, "K-Means Clustering Outliers")
 
 # COMPLETAR
 
-
-
+mis.datos.medias<-colMeans(mis.datos.numericos)
+mis.datos.desviaciones<-apply(mis.datos.numericos,2,sd)
+mis.datos.desviaciones.por.centroides<-sweep(centroides.normalizados.iris,mis.datos.desviaciones, FUN = "*",MARGIN = 2)
+centroides.valores<-sweep(mis.datos.desviaciones.por.centroides,mis.datos.medias,FUN="+",MARGIN=2)
+centroides.valores
 
 
 ###########################################################################
@@ -279,14 +285,16 @@ MiBiPlot_Clustering_Outliers(mis.datos.numericos, "K-Means Clustering Outliers")
 # Mostramos los ?ndices de los outliers llamando a la funci?n top_clustering_outliers
 # [1]  42  16 132 118  61
 
-
-
-
 # COMPLETAR
+library(cluster)
+mis.datos.numericos.dist<-dist(mis.datos.numericos.normalizados)
+modelo.pam<-pam(mis.datos.numericos.dist,k=numero.de.clusters)
+medoides.valores <- mis.datos.numericos[modelo.pam$medoids, ]
+medoides.valores
+medoides.valores.normalizados <- mis.datos.numericos.normalizados[as.numeric(modelo.pam$medoids),]
+medoides.valores.normalizados
 
-
-
-
+top_clustering_outliers(mis.datos.numericos.normalizados,modelo.pam$clustering,centroides.valores,numero.de.outliers)$indices
 
 ###########################################################################
 

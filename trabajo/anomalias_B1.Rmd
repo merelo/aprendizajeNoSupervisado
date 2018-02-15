@@ -9,19 +9,18 @@ source("../anomalias/!Outliers_A3_Funciones_a_cargar_en_cada_sesion2.R")
 source("../anomalias/!Outliers_A2_Librerias_a_cargar_en_cada_sesion.R")
 ```
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-```
-
 ## Crear datos
 Utilizamos LetterRecognition del paquete mlbench. Solo utilizamos las primeras 200 líneas ya que la visualización de 20000 entradas hace imposible analizar el problema.
 
-```{r, message=F, warning=F}
+```{r, message=F, warning=F, include=FALSE}
 library(mlbench)
 data("LetterRecognition")
 mydata.numeric  = LetterRecognition[1:200,-c(1)] 
 indice.columna  = 1
 nombre.mydata   = "LetterRecognition"
+```
+
+```{r}
 mydata.numeric.scaled<-scale(mydata.numeric,center=TRUE,scale=TRUE)
 columna<-mydata.numeric[,indice.columna]
 nombre.columna<-names(mydata.numeric[indice.columna])
@@ -35,8 +34,12 @@ columna.scaled<-scale(columna)
 cuartil.primero<-quantile(columna,0.25)
 cuartil.tercero<-quantile(columna,0.75)
 iqr<-IQR(columna)
-quantile(columna.scaled)
+iqr
+quantile(columna)
+```
+Obtenemos que el 50% de los datos se encuentran entre los valores 3 y 6, que el valor máximo es 12 y el mínimo es 1. Con IQR=3 no podemos decir que la dispersión de los datos sea muy grande.
 
+```{r}
 extremo.superior.outlier.normal  <- cuartil.tercero+1.5*iqr
 extremo.inferior.outlier.normal  <- cuartil.primero-1.5*iqr
 extremo.superior.outlier.extremo <- cuartil.tercero+3*iqr
@@ -46,7 +49,22 @@ vector.es.outlier.normal <- columna>extremo.superior.outlier.normal |
   columna<extremo.inferior.outlier.normal
 vector.es.outlier.extremo <- columna>extremo.superior.outlier.extremo | 
   columna<extremo.inferior.outlier.extremo
+
+
+print(paste("Extremo outlier normal.",
+            "Inferior:",extremo.inferior.outlier.normal,
+            "Superior:",extremo.superior.outlier.normal))
+print(paste("Extremo outlier extremo.",
+            "Inferior:",extremo.inferior.outlier.extremo,
+            "Superior:",extremo.superior.outlier.extremo))
+print(paste("Indices de outliers normales:",
+            paste(which(vector.es.outlier.normal),collapse = " ")))
+print(paste("Indices de outliers extremos:",
+            paste(which(vector.es.outlier.extremo), collapse = " ")))
 ```
+Consideramos como outlier normal a aquella entrada con valor menor a -1.5 o superior a 10.5 y como outlier extremo a aquellos con valores menores a -6 y superiores a 15.
+Para nuestros datos solo tenemos 2 valores de outliers normales y 0 extremos.
+Confirmamos que la dispersión de los datos es pequeña con solo un 1% de outliers.
 
 ## Índices y valores de los outliers
 ```{r}
@@ -54,33 +72,48 @@ claves.outliers.normales<-which(vector.es.outlier.normal)
 data.frame.outliers.normales<-mydata.numeric[claves.outliers.normales,]
 nombres.outliers.normales<-row.names(data.frame.outliers.normales)
 valores.outliers.normales<-columna[claves.outliers.normales]
-
+valores.outliers.normales
 ```
+Obtenemos que los dos únicos outliers de la columna que habíamos seleccionado tienen los valores 11 y 12.
 
 ## Desviación de los outliers con respecto a la media de la columna.
 ```{r}
 valores.normalizados.outliers.normales<-columna.scaled[vector.es.outlier.normal]
+valores.normalizados.outliers.normales
 ```
+Valores de los outliers en el vector normalizado.
 
 ## Plot
 ```{r}
 MiPlot_Univariate_Outliers(columna,claves.outliers.normales,nombre.columna)
 ```
+Vemos como para la 10ª y 28ª instancia tenemos los dos outliers con valor 11 y 12 respectivamente y que el resto de valores no supera 10.5 (valor a partir del cual tenemos outliers)
 
 ## BoxPlot
 ```{r}
 boxplot(columna, xlab=nombre.columna, main=nombre.mydata, las = 1)
-MiBoxPlot_IQR_Univariate_Outliers(columna.scaled, indice.columna, coef = 1.5)
+MiBoxPlot_IQR_Univariate_Outliers(mydata.numeric, indice.columna, coef = 1.5)
 ```
+Representación de los dos outliers con el resto de datos utilizando boxplot. Los valores normales no superan el valor 8.
 
 ## Cómputo de los outliers IQR con funciones propias.
 ```{r}
 head(vector_es_outlier_IQR(columna.scaled,indice.columna),n=10)
 head(vector_claves_outliers_IQR(columna.scaled,indice.columna),n=10)
+
+```
+Comprobación de que nuestras funciones dan los mismo resultados que las predefinidas.
+
+```{r}
 indices.de.outliers.en.alguna.columna<-
   vector_claves_outliers_IQR_en_alguna_columna(mydata.numeric)
-head(mydata.numeric.scaled[indices.de.outliers.en.alguna.columna,],n=10)
+indices.de.outliers.en.alguna.columna<-
+  indices.de.outliers.en.alguna.columna[
+    !duplicated(indices.de.outliers.en.alguna.columna)]
+length(indices.de.outliers.en.alguna.columna)
+head(mydata.numeric[indices.de.outliers.en.alguna.columna,],n=10)
 ```
+Calculamos las instancias con outliers en alguna columna. Tenemos 92 instancias con outlier. Mostramos solo las 10 primeras instancias.
 
 # Ampliación
 ## Índices y valores de los outliers
@@ -89,20 +122,36 @@ frame.es.outlier<-as.matrix(sapply(1:ncol(mydata.numeric),
                                    function(x,y){vector_es_outlier_IQR(y,x)},
                                    mydata.numeric))
 head(frame.es.outlier)
+```
+Como TRUE tenemos los valores que son outliers en esa columna.
+
+```{r}
 numero.total.outliers.por.columna<-apply(frame.es.outlier,2,sum)
 numero.total.outliers.por.columna
-indices.de.outliers.en.alguna.columna<-unlist(sapply(1:ncol(mydata.numeric),
-                                                     function(x,y){vector_claves_outliers_IQR(y,x)},
-                                                     frame.es.outlier))
+```
+Número de outliers por columna. Podemos observar como la última columna es la que más outliers tiene con 41.
+
+```{r}
+indices.de.outliers.en.alguna.columna<-unlist(
+  sapply(1:ncol(mydata.numeric),
+         function(x,y){vector_claves_outliers_IQR(y,x)},
+         frame.es.outlier))
+indices.de.outliers.en.alguna.columna<-
+  indices.de.outliers.en.alguna.columna[
+    !duplicated(indices.de.outliers.en.alguna.columna)]
+
 head(indices.de.outliers.en.alguna.columna)
 ```
+Vector de indices de las instancias con algún outlier en alguna columna.
 
 ## Desviación de los outliers con respecto a la media de la columna
 ```{r}
-head(mydata.numeric.scaled[indices.de.outliers.en.alguna.columna,])
+head(mydata.numeric.scaled[indices.de.outliers.en.alguna.columna,],n=10)
 ```
+Mostramos solo las 10 primeras instancias normalizadas de las instancias con algún outlier.
 
 ## Boxplot
 ```{r}
 MiBoxPlot_juntos_con_etiquetas(mydata.numeric)
 ```
+Mostramos todos los outliers de las variables. Podemos comprobar como se corresponden con los datos antes calculados viendo que en la última columna tenemos mayor cantidad de outliers.
