@@ -28,39 +28,48 @@ set.seed(12)
 #solo con las 10 primeras variables, uni.plot no permite mas
 mvoutlier.plot<-uni.plot(mydata.numeric[1:10],symb=FALSE,alpha=alpha.value.penalizado)
 ```
+En el gráfico tenemos representados valores escalados de las variables con los que son outliers multivariantes.
 
 # 2. Análisis de los outliers
 ```{r}
 is.MCD.outlier<-mvoutlier.plot$outliers
 numero.de.outliers.MCD<-sum(is.MCD.outlier)
+numero.de.outliers.MCD
+```
+En nuestro conjunto de datos tenemos 53 outliers multivariantes.
 
+
+```{r}
 indices.de.outliers.en.alguna.columna<-
   vector_claves_outliers_IQR_en_alguna_columna(mydata.numeric)
-head(indices.de.outliers.en.alguna.columna,n=20)
-```
-
-```{r}
+indices.de.outliers.en.alguna.columna<-
+  indices.de.outliers.en.alguna.columna[!duplicated(indices.de.outliers.en.alguna.columna)]
 indices.de.outliers.multivariantes.MCD<-which(is.MCD.outlier)
-head(indices.de.outliers.multivariantes.MCD,n=20)
-```
-
-```{r}
 indices.de.outliers.multivariantes.MCD.pero.no.1variantes<-
   setdiff(indices.de.outliers.multivariantes.MCD,indices.de.outliers.en.alguna.columna)
 nombres.de.outliers.multivariantes.MCD.pero.no.1variantes<-
   names(is.MCD.outlier[indices.de.outliers.multivariantes.MCD.pero.no.1variantes])
-data.frame.solo.outliers<-mydata.numeric.scaled[is.MCD.outlier,]
+indices.de.outliers.multivariantes.MCD.pero.no.1variantes
 ```
+Indices de los outliers que son únicamente multivariantes.
+
+```{r}
+data.frame.solo.outliers<-mydata.numeric.scaled[is.MCD.outlier,]
+head(data.frame.solo.outliers)
+```
+Valores normalizados de las instancias con outliers.
 
 ```{r}
 set.seed(12) 
 MiBoxPlot_juntos(mydata.numeric,is.MCD.outlier)
 ```
+Podemos ver como se muestran en rojo los outliers simples y los multivariables. Por ejemplo, en x.ege podemos ver algunos entre el primer y segundo cuartil.
 
 ```{r}
 set.seed(12)
 MiBiPlot_Multivariate_Outliers(mydata.numeric,is.MCD.outlier,"LETTERRECOGNITION")
 ```
+En este gráfico se colorean en rojo aquellos valores que son outliers multivariantes. 
 
 ```{r}
 set.seed(12) 
@@ -68,4 +77,4 @@ MiPlot_Univariate_Outliers(mydata.numeric,
                            indices.de.outliers.en.alguna.columna,
                            "LETTERRECOGNITION")
 ```
-
+Mostramos las variables dos a dos y marcamos aquellos puntos pertenecientes a instancias que tengan algún outlier en alguna variable. Por la cantidad de instancias con outliers que tenemos, casi el 50%, es imposible sacar una conclusión de este gráfico.

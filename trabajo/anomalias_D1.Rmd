@@ -29,20 +29,14 @@ mvoutlier.plot<-uni.plot(mis.datos.numericos[1:10],
                          symb=FALSE,
                          alpha=alpha.value.penalizado)
 ```
+Tenemos el mismo gráfico ya analizado con los outliers multivariables marcados en rojo.
 
 ```{r}
 is.MCD.outlier<-mvoutlier.plot$outliers
 numero.de.outliers.MCD<-sum(is.MCD.outlier)
-numero.de.outliers.MCD
-```
-
-```{r}
 corr.plot(mis.datos.numericos[,1], mis.datos.numericos[,3]) 
 ```
-
-```{r}
-MiBiplot(mis.datos.numericos)
-```
+Entre estas dos variables podemos ver como hay dos outliers bastante claros con valores 11 y 12 en X y 13 y 12 en Y.
 
 # 1. DISTANCE BASED OUTLIERS (LOF)
 ```{r}
@@ -51,34 +45,33 @@ set.seed(12)
 lof.scores<-lofactor(mis.datos.numericos.normalizados,numero.de.vecinos.lof)
 plot(lof.scores)
 ```
+Vemos que hay 5 puntos con un lof claramente más alto que los demás, por encima de 1.6 y otros 2 que destacan entre 1.4 y 1.6 por lo que fijaremos el número de outliers en 7.
 
 ```{r}
-numero.de.outliers = 4
+numero.de.outliers = 7
 indices.de.lof.outliers.ordenados<-order(lof.scores,decreasing=TRUE)
-indices.de.lof.top.outliers<-indices.de.lof.outliers.ordenados[1:4]
-indices.de.lof.top.outliers
-```
-
-
-```{r}
+indices.de.lof.top.outliers<-indices.de.lof.outliers.ordenados[1:numero.de.outliers]
 is.lof.outlier<-row.names(mis.datos.numericos) %in% indices.de.lof.top.outliers
+indices.de.lof.top.outliers
 MiBiPlot_Multivariate_Outliers(mis.datos.numericos,
                                is.lof.outlier,
                                "LETTERRECOGNITION")
 ```
-
+Los 5 puntos con mayor lof son 10, 28, 52, 31 y 66 mientras que los dos que consideramos outliers por superar el valor 1.4 de lof son 191 y 158.
 
 ```{r}
 vector.claves.outliers.IQR.en.alguna.columna<-
   vector_claves_outliers_IQR_en_alguna_columna(mis.datos.numericos)
-vector.claves.outliers.IQR.en.alguna.columna
-```
-
-```{r}
 vector.es.outlier.IQR.en.alguna.columna<-vector_es_outlier_IQR_en_alguna_columna(mis.datos.numericos)
 MiBiPlot_Multivariate_Outliers(mis.datos.numericos,vector.es.outlier.IQR.en.alguna.columna,"LETTERRECOGNITION")
-indices.de.outliers.multivariantes.LOF.pero.no.1variantes<-setdiff(vector.claves.outliers.IQR.en.alguna.columna,indices.de.lof.top.outliers)
 ```
+Vemos que los puntos con mayor lof que habíamos seleccionado son outliers por columna.
+
+```{r}
+indices.de.outliers.multivariantes.LOF.pero.no.1variantes<-setdiff(vector.claves.outliers.IQR.en.alguna.columna,indices.de.lof.top.outliers)
+sort(indices.de.outliers.multivariantes.LOF.pero.no.1variantes)
+```
+Confirmamos la conclusión del gráfico anterior por lo que podemos decir que, para nuestro caso, usando distancia de Mahalanobis o usando LOF llegamos al mismo resultado.
 
 ```{r}
 data.frame.numeric<-LetterRecognition[sapply(LetterRecognition,is.numeric)]
