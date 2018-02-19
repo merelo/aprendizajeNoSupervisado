@@ -54,13 +54,12 @@ limpiar<-function(rulesSorted){
 rulesSorted = sort(rules, by = "lift")
 inspect(head(rulesSorted))
 mejores<-rulesSorted[rulesSorted@quality$lift>2]
-mejores<-limpiar(mejores)
 mejores<-mejores[order(mejores@quality$support*mejores@quality$confidence)]
 inspect(head(mejores,n=25))
 
 
 #{eggs=TRUE,fins=FALSE} => {toothed=FALSE} sop: 0.3861386  conf: 0.8478261
-rulesPruned<- subset(rules, subset = lhs %in% "eggs=TRUE" & lhs %in% "fins=FALSE")
+rulesPruned<- subset(rules, subset = lhs %in% "airborne=TRUE")
 rulesPruned<-limpiar(rulesPruned)
 inspect(rulesPruned)
 #{eggs=TRUE,aquatic=FALSE}  => {toothed=FALSE} sop: 0.2574257 conf: 0.8965517
@@ -109,23 +108,17 @@ levels(zooNegados$type_reptile)<-c(FALSE,TRUE)
 zooNegados<-zooNegados[-4]
 
 
-rulesNegadas <- apriori(as(zooNegados,"transactions"), parameter = list(support = 0.4, confidence = 0.8, minlen = 2))
+rulesNegadas <- apriori(as(zooNegados,"transactions"), parameter = list(support = 0.2, confidence = 0.8, minlen = 2))
 #mejor lift y mejor support*confidence
+mejoresNegadas<-rulesNegadas
 rulesSorted = sort(rulesNegadas, by = "lift")
 inspect(head(rulesSorted))
 mejoresNegadas<-rulesSorted[rulesSorted@quality$lift>2]
-mejoresNegadas<-limpiar(mejoresNegadas)
 mejoresNegadas<-mejoresNegadas[order(mejoresNegadas@quality$support*mejoresNegadas@quality$confidence)]
 inspect(head(mejoresNegadas,n=10))
 
 
 #{feathers=FALSE, backbone=TRUE, type_amphibian=FALSE, type_fish=FALSE} => {eggs=FALSE} soporte: 0.4059 confianza: 0.89
-rulesPruned<- subset(mejoresNegadas, subset = lhs %in% "backbone=TRUE" & lhs %in% "feathers=FALSE")
+rulesPruned<- subset(mejoresNegadas, subset = lhs %in% "predator=TRUE")
 rulesPruned<-limpiar(rulesPruned)
-inspect(rulesPruned)
-
-#{toothed=TRUE,type_fish=FALSE} => {eggs=FALSE} sop: 0.4059406 conf: 0.8541667
-rulesPruned<- subset(mejoresNegadas, subset = lhs %in% "toothed=TRUE" & rhs %in% "eggs=FALSE")
-rulesPruned<-limpiar(rulesPruned)
-inspect(rulesPruned)
-
+inspect(head(rulesPruned,n=20))
